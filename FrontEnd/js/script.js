@@ -29,8 +29,6 @@ async function buildGallery() {
 
     const projects = await importProject();
 
-    console.log(projects);
-
     projects.forEach((project) => {
 
 
@@ -41,33 +39,34 @@ async function buildGallery() {
         let captionText;
         let galleryContainer;
 
+        /* select gallery to add theses elements */
+        galleryContainer = document.querySelector('div.gallery');
 
         /* create figure container */
         figureElt = document.createElement('figure');
 
+        figureElt = galleryContainer.appendChild(figureElt);
+
         /* create image */
         imgElt = document.createElement('img');
-        imgElt.setAttribute('src', project.imageUrl);
+        // imgElt.setAttribute('src', project.imageUrl);
+
+        // cors not enabled, test with clean url
+        imgElt.setAttribute('src', 'https://place-hold.it/900');
         imgElt.setAttribute('alt', project.title);
 
         /* add image to figure */
-        figureElt = figureElt.appendChild(imgElt);
+        figureElt.appendChild(imgElt);
 
         /* create caption */
         captionElt = document.createElement('figcaption');
+
+        /* add figcaption to figure */
+        captionElt = figureElt.appendChild(captionElt);
         captionText = document.createTextNode(project.title);
 
         /* add text to caption */
         captionElt.appendChild(captionText);
-
-        /* add figcaption to figure */
-        figureElt = figureElt.appendChild(captionElt);
-
-        /* select gallery to add theses elements */
-        galleryContainer = document.querySelector('div.gallery');
-
-        /* finally add figure to gallery */
-        galleryContainer.appendChild(figureElt);
     
     });
 }
