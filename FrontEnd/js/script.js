@@ -1,11 +1,11 @@
 /* Script chargé de l'import des projets */
 
 /* call our function to build non filtered gallery */
-document.body.onload = buildGallery;
+document.body.onload = buildPage;
 
 
 /* make an api call to retrieve all projects and return it */
-async function getAllProject() {
+async function getAllProjects() {
 
     /* define our options */
     const options = {
@@ -29,14 +29,42 @@ async function getAllProject() {
 
 }
 
+async function getAllCategories() {
+
+    /* define our options */
+    const options = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    };
+
+    /* use this url */
+    const categoriesUrl = 'http://localhost:5678/api/categories';
+
+    /* effectively fetch categories */
+    const response = await fetch(categoriesUrl, options);
+
+    /* to Json for ease of use */
+    const categories = await response.json();
+
+    /* finally return categories */
+    return categories;
+
+}
+
 /*
-* add all projects to gallery on page load
+* add all projects to gallery
 * iterate over projects 
 * create a figure element for each project
 */ 
-async function buildGallery() {
+async function addGallery() {
 
-    const projects = await importProject();
+    // retrieve projects
+    const projects = await getAllProjects();
+
+    /* select gallery to add theses elements */
+    const galleryContainer = document.querySelector('div.gallery');
 
     projects.forEach((project) => {
 
@@ -46,10 +74,6 @@ async function buildGallery() {
         let imgElt;
         let captionElt;
         let captionText;
-        let galleryContainer;
-
-        /* select gallery to add theses elements */
-        galleryContainer = document.querySelector('div.gallery');
 
         /* create figure container */
         figureElt = document.createElement('figure');
@@ -77,3 +101,49 @@ async function buildGallery() {
     });
 }
 
+/*
+* async function which add filter menu on page
+*/
+async function addCategories() {
+
+    /* retrieve categories */
+    const categories = await getAllCategories();
+    console.log(categories);
+
+    // create category bar, add style
+    let categoriesDiv;
+    categoriesDiv = document.createElement('div');
+    categoriesDiv.classList.add('categories');
+
+    // select section and gallery to insert our div
+    const portfolio = document.getElementById('portfolio');
+    const galleryContainer = document.querySelector('div.gallery');
+    
+    categoriesDiv = portfolio.insertBefore(categoriesDiv, galleryContainer);
+
+    let allProjectsFilter = document.createElement('button');
+    allProjectsFilter.classList.add('active');
+    allProjectsFilter.appendChild(document.createTextNode('Tous'));
+    categoriesDiv.appendChild(allProjectsFilter);
+
+    /* iterate over categories to add an entry */
+    categories.forEach((category) => {
+
+        let categoryElt = document.createElement('button');
+        let buttonText = document.createTextNode(category.name);
+
+        categoryElt = categoriesDiv.appendChild(categoryElt);
+        categoryElt.appendChild(buttonText);
+
+    });
+}
+
+
+/* 
+* call necessary function to add dynamic elements
+* to this page
+*/
+async function buildPage() {
+    addCategories();
+    addGallery();
+}
