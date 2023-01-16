@@ -1,11 +1,15 @@
 /* Script chargé de l'import des projets */
 
-async function importProject() {
+/* call our function to build non filtered gallery */
+document.body.onload = buildGallery;
+
+
+/* make an api call to retrieve all projects and return it */
+async function getAllProject() {
 
     /* define our options */
     const options = {
         method: 'GET',
-        mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
         }
@@ -25,6 +29,11 @@ async function importProject() {
 
 }
 
+/*
+* add all projects to gallery on page load
+* iterate over projects 
+* create a figure element for each project
+*/ 
 async function buildGallery() {
 
     const projects = await importProject();
@@ -49,10 +58,7 @@ async function buildGallery() {
 
         /* create image */
         imgElt = document.createElement('img');
-        // imgElt.setAttribute('src', project.imageUrl);
-
-        // cors not enabled, test with clean url
-        imgElt.setAttribute('src', 'https://place-hold.it/900');
+        imgElt.setAttribute('src', project.imageUrl);
         imgElt.setAttribute('alt', project.title);
 
         /* add image to figure */
@@ -70,6 +76,4 @@ async function buildGallery() {
     
     });
 }
-
-document.body.onload = buildGallery;
 
