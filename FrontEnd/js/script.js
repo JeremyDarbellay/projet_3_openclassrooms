@@ -1,44 +1,25 @@
 /* Script chargé de l'import des projets */
 
 /* TODOLIST
- * @TODO rename superSet
  */
 
 /* call our function to build non filtered gallery */
 document.body.onload = buildPage;
 
 /* Create our main set, to use it later */
-let superSet = new Set();
+let worksSet = new Set();
 
 
 /** 
-* make an api call to retrieve all projects and return it 
-* @return {object} All projects
+* make an api call to retrieve all works 
+* and adds it to worksSet
+* @return {object} All works
 */
-async function getAllProjects() {
+async function getAllWorks() {
 
-    /* define our options */
-    const options = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    };
-
-    /* use this url */
-    const projectsUrl = 'http://localhost:5678/api/works';
-
-    /* effectively fetch projects */
-    const response = await fetch(projectsUrl, options);
-
-    /* to Json for ease of use */
-    const projects = await response.json();
-
-    // Let it Here ? @TODO move this ?
-    projects.forEach( (project) => {superSet.add(project)} );
-
-    /* finally return projects */
-    return projects;
+    return fetch('http://localhost:5678/api/works')
+        .then( data => data.json() )
+        .then( works => works.forEach( (work) => worksSet.add(work)) )
 
 }
 
@@ -48,78 +29,52 @@ async function getAllProjects() {
  */
 async function getAllCategories() {
 
-    /* define our options */
-    const options = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    };
-
-    /* use this url */
-    const categoriesUrl = 'http://localhost:5678/api/categories';
-
-    /* effectively fetch categories */
-    const response = await fetch(categoriesUrl, options);
-
-    /* to Json for ease of use */
-    const categories = await response.json();
-
-    /* finally return categories */
-    return categories;
+    return fetch('http://localhost:5678/api/categories')
+        .then( categories => categories.json() )
 
 }
 
 /*
-* add all projects to gallery
-* iterate over projects 
-* create a figure element for each project
+* add all works to gallery
+* iterate over works 
+* create a figure element for each work
 */ 
 async function addGallery() {
-
-    // retrieve projects
-    const projects = await getAllProjects();
 
     /* select gallery to add theses elements */
     const galleryContainer = document.querySelector('div.gallery');
 
-    projects.forEach((project) => {
+    worksSet.forEach((work) => {
 
-        let figureElt = createProjectElt(project);
+        let figureElt = createWorkElt(work);
         figureElt = galleryContainer.appendChild(figureElt);
 
     });
 }
 
 /**
- * Create a project element
- * for a given project
- * @param {Object} project The project containing informations
- * @return {Node} The project figure
+ * Create a work element
+ * for a given work
+ * @param {Object} work The work containing informations
+ * @return {Node} The work figure
  */
-function createProjectElt(project) {
+function createWorkElt(work) {
 
         /* create figure container */
         let figureElt = document.createElement('figure');
 
-
         /* create image */
         let imgElt = document.createElement('img');
-        imgElt.setAttribute('src', project.imageUrl);
-        imgElt.setAttribute('alt', project.title);
-
-        /* add image to figure */
-        figureElt.appendChild(imgElt);
+        imgElt.setAttribute('src', work.imageUrl);
+        imgElt.setAttribute('alt', work.title);
 
         /* create caption */
         let captionElt = document.createElement('figcaption');
+        captionElt.appendChild(document.createTextNode(work.title));
 
-        /* add figcaption to figure */
-        captionElt = figureElt.appendChild(captionElt);
-        let captionText = document.createTextNode(project.title);
-
-        /* add text to caption */
-        captionElt.appendChild(captionText);
+        /* add subelements to figure */
+        figureElt.appendChild(imgElt);
+        figureElt.appendChild(captionElt);
 
         return figureElt
 }
@@ -127,9 +82,11 @@ function createProjectElt(project) {
 /* 
 * call necessary function to add dynamic elements
 * to this page
-* @TODO rework it !
 */
 async function buildPage() {
+
+    // retrieve works
+    await getAllWorks();
 
     buildCategories();
 
@@ -145,32 +102,41 @@ async function buildCategories() {
 
     let filterBarElt = await createFilterBar();
 
-    filterBarElt = await addAllProjectFilter(filterBarElt);
+    filterBarElt = await addAllWorkFilter(filterBarElt);
 
-    const categories = await getAllCategories();
-    categories.forEach((category) => {
+    await getAllCategories()
+        .then((categories) => {
 
-        // call creation of element, get final element
-        let categoryElt = createCategoryElt(category.name, filterBarElt);
+            categories.forEach((category) => {
+        
+                // create category element
+                createCategoryElt(category, filterBarElt);
 
-        // add an event to this element to be able to filter it
-        categoryElt.addEventListener("click", (e) => {filterProjects(e, category.id)});
-    });
+            });
+
+        });
+
+    // add Event listener to categories
+    for (let category of filterBarElt.childNodes) {
+        category.addEventListener('click', (e) => filterWorks(e));
+    }
+
 }
 
 /**
 * build a filter element and return it
-* @param {string} categoryName The category name
+* @param {object} category The category
 * @param {Node} filterBar The filterBar element
 * @return {Node} the category element
 */
-function createCategoryElt(categoryName, filterBar) {
+function createCategoryElt(category, filterBar) {
 
     // create our element
     let categoryElt = document.createElement('button');
 
     // add category name inside button
-    categoryElt.appendChild(document.createTextNode(categoryName));
+    categoryElt.appendChild(document.createTextNode(category.name));
+    categoryElt.setAttribute('data-categoryid', category.id)
 
     // add our element to it's parent (filterBar)
     categoryElt = filterBar.appendChild(categoryElt);
@@ -200,35 +166,32 @@ async function createFilterBar() {
 }
 
 /**
- * add "All" filter and attach filter Event to it
+ * add "All" filter to filter bar
  * @param {Node} filterBar The filter div
  * @return {Node} the filter div with "all" filter
  */
-async function addAllProjectFilter(filterBar) {
+async function addAllWorkFilter(filterBar) {
 
     // create default filter
-    let allProjectsFilter = document.createElement('button');
+    let allWorksFilter = document.createElement('button');
     // add default style
-    allProjectsFilter.classList.add('active');
+    allWorksFilter.classList.add('active');
+    allWorksFilter.setAttribute('data-categoryid', 'default');
     // then add text
-    allProjectsFilter.appendChild(document.createTextNode('Tous'));
-
-    // register an event listener to filter all projects (0)
-    allProjectsFilter.addEventListener("click", (e) =>{filterProjects(e, 0)});
+    allWorksFilter.appendChild(document.createTextNode('Tous'));
 
     // attach it to filterBar
-    filterBar.appendChild(allProjectsFilter);
+    filterBar.appendChild(allWorksFilter);
 
     return filterBar;
 }
 
 /**
- * hide projects if not in category provided
- * if no category provided show all projects
+ * hide works if not in category provided
+ * if no category provided show all works
  * @param {Event} e the event propagated
- * @param {Int} categoryId category id
  */
-async function filterProjects(e, categoryId) {
+async function filterWorks(e) {
 
 
     /* select categories div, then remove active class */
@@ -242,17 +205,17 @@ async function filterProjects(e, categoryId) {
 
     /* select gallery */
     const galleryContainer = document.querySelector('div.gallery');
-    const projectsElts = document.querySelectorAll('div.gallery>figure');
+    const worksElts = document.querySelectorAll('div.gallery>figure');
 
     /* reset all subnodes */
-    for (let figure of projectsElts) {
+    for (let figure of worksElts) {
         galleryContainer.removeChild(figure);
     }
 
-    superSet.forEach( (project) => {
-        if (project.categoryId == categoryId || categoryId == 0) {
-            let newProjectElt = createProjectElt(project);
-            galleryContainer.appendChild(newProjectElt);
+    worksSet.forEach( (work) => {
+        if (e.currentTarget.getAttribute('data-categoryid') == work.categoryId || e.currentTarget.getAttribute('data-categoryid') == 'default') {
+
+            galleryContainer.appendChild(createWorkElt(work));
         }
     });
 
