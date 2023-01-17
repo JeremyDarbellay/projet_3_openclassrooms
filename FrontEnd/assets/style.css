@@ -52,6 +52,16 @@ body {
 	margin:auto;
 	font-family: 'Work Sans' ;
 	font-size: 14px;
+
+	background: #FFFEF8;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	position: relative;
+	padding-bottom: 60px;
+}
+main {
+	flex: 1;
 }
 header {
 	display: flex;
@@ -204,9 +214,61 @@ input[type="submit"]{
 	border-radius: 60px ;
 }
 
+footer {
+	position: absolute;
+	bottom: 0;
+	right: calc(50% - 50vw);
+}
+
 footer nav ul {
 	display: flex;
 	justify-content: flex-end;
-	margin: 2em
+	margin: 2em;
+	margin-right: 107px;
+	margin-bottom: 1.25em;
+}
+
+/* login page */
+
+.bold {
+	font-weight: 800;
+}
+.login-section>h2 {
+	text-align: center;
+	margin-bottom: 37px;
+}
+.login-form {
+	display: flex;
+	flex-direction: column;
+}
+.login-form>* {
+	margin: auto;
+	width: fit-content;
+}
+.login-form>label {
+	display: flex;
+	flex-direction:column;
+	margin-bottom: 30px;
+}
+.login-form>label>input {
+	margin-top: 7px;
+	border: unset;
+	background: #FFFFFF;background: #FFFFFF;
+	box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.09);
+	height: 51px;
+	width: 379px;
+}
+.login-form>input[type="submit"] {
+	margin-top: 7px;
+	margin-bottom: 28px;
+	border: unset;
+	padding: 10px 38px 9px 39px;
+}
+.login-form>a {
+	color: #3D3D3D;
+	font-weight: 500;
+}
+body.login-page {
+	padding-bottom: 0;
 }
 
