@@ -1,10 +1,20 @@
 /* Script chargé de l'import des projets */
 
+/* TODOLIST
+ * @TODO rename superSet
+ */
+
 /* call our function to build non filtered gallery */
 document.body.onload = buildPage;
 
+/* Create our main set, to use it later */
+let superSet = new Set();
 
-/* make an api call to retrieve all projects and return it */
+
+/** 
+* make an api call to retrieve all projects and return it 
+* @return {object} All projects
+*/
 async function getAllProjects() {
 
     /* define our options */
@@ -24,11 +34,18 @@ async function getAllProjects() {
     /* to Json for ease of use */
     const projects = await response.json();
 
+    // Let it Here ? @TODO move this ?
+    projects.forEach( (project) => {superSet.add(project)} );
+
     /* finally return projects */
     return projects;
 
 }
 
+/**
+ * Make an api call to retrieve categories
+ * @return {object}
+ */
 async function getAllCategories() {
 
     /* define our options */
@@ -68,20 +85,26 @@ async function addGallery() {
 
     projects.forEach((project) => {
 
-
-        /* init our vars */
-        let figureElt;
-        let imgElt;
-        let captionElt;
-        let captionText;
-
-        /* create figure container */
-        figureElt = document.createElement('figure');
-
+        let figureElt = createProjectElt(project);
         figureElt = galleryContainer.appendChild(figureElt);
 
+    });
+}
+
+/**
+ * Create a project element
+ * for a given project
+ * @param {Object} project The project containing informations
+ * @return {Node} The project figure
+ */
+function createProjectElt(project) {
+
+        /* create figure container */
+        let figureElt = document.createElement('figure');
+
+
         /* create image */
-        imgElt = document.createElement('img');
+        let imgElt = document.createElement('img');
         imgElt.setAttribute('src', project.imageUrl);
         imgElt.setAttribute('alt', project.title);
 
@@ -89,61 +112,150 @@ async function addGallery() {
         figureElt.appendChild(imgElt);
 
         /* create caption */
-        captionElt = document.createElement('figcaption');
+        let captionElt = document.createElement('figcaption');
 
         /* add figcaption to figure */
         captionElt = figureElt.appendChild(captionElt);
-        captionText = document.createTextNode(project.title);
+        let captionText = document.createTextNode(project.title);
 
         /* add text to caption */
         captionElt.appendChild(captionText);
-    
+
+        return figureElt
+}
+
+/* 
+* call necessary function to add dynamic elements
+* to this page
+* @TODO rework it !
+*/
+async function buildPage() {
+
+    buildCategories();
+
+    addGallery();
+}
+
+/* 
+* main function to build category bar 
+* and attach events listeners
+*/
+async function buildCategories() {
+
+
+    let filterBarElt = await createFilterBar();
+
+    filterBarElt = await addAllProjectFilter(filterBarElt);
+
+    const categories = await getAllCategories();
+    categories.forEach((category) => {
+
+        // call creation of element, get final element
+        let categoryElt = createCategoryElt(category.name, filterBarElt);
+
+        // add an event to this element to be able to filter it
+        categoryElt.addEventListener("click", (e) => {filterProjects(e, category.id)});
     });
 }
 
-/*
-* async function which add filter menu on page
+/**
+* build a filter element and return it
+* @param {string} categoryName The category name
+* @param {Node} filterBar The filterBar element
+* @return {Node} the category element
 */
-async function addCategories() {
+function createCategoryElt(categoryName, filterBar) {
 
-    /* retrieve categories */
-    const categories = await getAllCategories();
-    console.log(categories);
+    // create our element
+    let categoryElt = document.createElement('button');
+
+    // add category name inside button
+    categoryElt.appendChild(document.createTextNode(categoryName));
+
+    // add our element to it's parent (filterBar)
+    categoryElt = filterBar.appendChild(categoryElt);
+
+    return categoryElt;
+}
+
+/**
+ * create div which contains categories
+ * then return it
+ * @return {Node}
+ */
+async function createFilterBar() {
 
     // create category bar, add style
-    let categoriesDiv;
-    categoriesDiv = document.createElement('div');
-    categoriesDiv.classList.add('categories');
+    let filtersDiv = document.createElement('div');
+    filtersDiv.classList.add('categories');
 
     // select section and gallery to insert our div
     const portfolio = document.getElementById('portfolio');
     const galleryContainer = document.querySelector('div.gallery');
     
-    categoriesDiv = portfolio.insertBefore(categoriesDiv, galleryContainer);
+    filtersDiv = portfolio.insertBefore(filtersDiv, galleryContainer);
 
-    let allProjectsFilter = document.createElement('button');
-    allProjectsFilter.classList.add('active');
-    allProjectsFilter.appendChild(document.createTextNode('Tous'));
-    categoriesDiv.appendChild(allProjectsFilter);
+    return filtersDiv;
 
-    /* iterate over categories to add an entry */
-    categories.forEach((category) => {
-
-        let categoryElt = document.createElement('button');
-        let buttonText = document.createTextNode(category.name);
-
-        categoryElt = categoriesDiv.appendChild(categoryElt);
-        categoryElt.appendChild(buttonText);
-
-    });
 }
 
+/**
+ * add "All" filter and attach filter Event to it
+ * @param {Node} filterBar The filter div
+ * @return {Node} the filter div with "all" filter
+ */
+async function addAllProjectFilter(filterBar) {
 
-/* 
-* call necessary function to add dynamic elements
-* to this page
-*/
-async function buildPage() {
-    addCategories();
-    addGallery();
+    // create default filter
+    let allProjectsFilter = document.createElement('button');
+    // add default style
+    allProjectsFilter.classList.add('active');
+    // then add text
+    allProjectsFilter.appendChild(document.createTextNode('Tous'));
+
+    // register an event listener to filter all projects (0)
+    allProjectsFilter.addEventListener("click", (e) =>{filterProjects(e, 0)});
+
+    // attach it to filterBar
+    filterBar.appendChild(allProjectsFilter);
+
+    return filterBar;
+}
+
+/**
+ * hide projects if not in category provided
+ * if no category provided show all projects
+ * @param {Event} e the event propagated
+ * @param {Int} categoryId category id
+ */
+async function filterProjects(e, categoryId) {
+
+
+    /* select categories div, then remove active class */
+    const categoriesButtons = document.querySelectorAll('div.categories>button');
+    categoriesButtons.forEach( (categoryButton) => {
+        categoryButton.classList.remove('active');
+    })
+
+    /* Then add active class */
+    e.currentTarget.classList.add('active');
+
+    /* select gallery */
+    const galleryContainer = document.querySelector('div.gallery');
+    const projectsElts = document.querySelectorAll('div.gallery>figure');
+
+    /* reset all subnodes */
+    for (let figure of projectsElts) {
+        galleryContainer.removeChild(figure);
+    }
+
+    superSet.forEach( (project) => {
+        if (project.categoryId == categoryId || categoryId == 0) {
+            let newProjectElt = createProjectElt(project);
+            galleryContainer.appendChild(newProjectElt);
+        }
+    });
+
+    
+
 }
