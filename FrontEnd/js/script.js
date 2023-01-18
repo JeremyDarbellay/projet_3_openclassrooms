@@ -91,6 +91,8 @@ async function buildPage() {
     buildCategories();
 
     addGallery();
+
+    showWorksBar();
 }
 
 /* 
@@ -220,5 +222,14 @@ async function filterWorks(e) {
     });
 
     
+
+}
+
+/**
+ * function to show admin functionalities
+ * on page, like adding or removing
+ * works.
+ */
+async function showWorksBar() {
 
 }

@@ -23,12 +23,12 @@
         </nav>
     </header>
     <main>
-        <section class="login-section">
+        <section class="login-section" id="login-section">
             <h2>Log in</h2>
-            <form class="login-form">
-                <label for="email">E-mail<input type="email" name="email" id="email"></label>
+            <form class="login-form" id="login-form" method="POST">
+                <label for="email">E-mail<input type="email" name="email" id="email" required></label>
                 
-                <label for="password">Mot de passe<input type="password" name="password" id="password"></label>
+                <label for="password">Mot de passe<input type="password" name="password" id="password" required></label>
                 
                 <input type="submit" value="Se connecter">
                 <a href="#">Mot de passe oublié</a>
@@ -43,5 +43,6 @@
             </ul>
         </nav>
     </footer>
+    <script src="js/login.js"></script>
 </body>
 </html>

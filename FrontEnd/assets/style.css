@@ -105,6 +105,11 @@ nav li {
 	font-size: 1.2em;
 }
 
+.login-link {
+	text-decoration: none;
+	color: unset;
+}
+
 li:hover {
 	color: #B1663C;
 }
@@ -263,6 +268,7 @@ footer nav ul {
 	margin-bottom: 28px;
 	border: unset;
 	padding: 10px 38px 9px 39px;
+	cursor: pointer;
 }
 .login-form>a {
 	color: #3D3D3D;
@@ -270,5 +276,13 @@ footer nav ul {
 }
 body.login-page {
 	padding-bottom: 0;
+}
+.error {
+	border: rgb(126, 16, 16) 1px solid;
+	background-color: #f9cac7;
+	text-align: center;
+	padding: 1em 2em;
+	margin: 1em auto;
+	width: fit-content;
 }
 
