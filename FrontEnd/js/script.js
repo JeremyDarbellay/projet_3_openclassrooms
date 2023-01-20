@@ -16,7 +16,7 @@ async function getAllWorks() {
 
     return fetch('http://localhost:5678/api/works')
         .then( data => data.json() )
-        .then( works => works.forEach( (work) => worksSet.add(work)) )
+        .then( works => works.forEach( (work) => worksSet.add(work)) );
 
 }
 
@@ -27,7 +27,7 @@ async function getAllWorks() {
 async function getAllCategories() {
 
     return fetch('http://localhost:5678/api/categories')
-        .then( categories => categories.json() )
+        .then( categories => categories.json() );
 
 }
 
@@ -40,6 +40,14 @@ async function buildGallery() {
 
     /* select gallery to add theses elements */
     const galleryContainer = document.querySelector('div.gallery');
+
+    // reset gallery
+    if (galleryContainer.children) {
+        /* reset all subnodes */
+        for (let child of galleryContainer.children) {
+            galleryContainer.removeChild(child);
+        }
+    }
 
     worksSet.forEach((work) => {
 
@@ -73,7 +81,7 @@ function createWorkElt(work) {
         figureElt.appendChild(imgElt);
         figureElt.appendChild(captionElt);
 
-        return figureElt
+        return figureElt;
 }
 
 /* 
@@ -197,7 +205,7 @@ async function filterWorks(e) {
     const categoriesButtons = document.querySelectorAll('div.categories>button');
     categoriesButtons.forEach( (categoryButton) => {
         categoryButton.classList.remove('active');
-    })
+    });
 
     /* Then add active class */
     e.currentTarget.classList.add('active');
@@ -217,8 +225,6 @@ async function filterWorks(e) {
             galleryContainer.appendChild(createWorkElt(work));
         }
     });
-
-    
 
 }
 
@@ -262,13 +268,12 @@ function createEditButton() {
 }
 
 /**
- * show modal 
+ * construct modal
+ * if modal exist delete it before
  */
 async function openModal() {
 
-    let existingModal
-    // if modal exist do nothing
-    if (existingModal !== undefined) document.body.removeChild(existingModal);
+    closeModal();
 
     let modal = await createModal();
 
@@ -280,9 +285,10 @@ async function openModal() {
 }
 
 // close modal from close button
-async function closeModal(e) {
+async function closeModal() {
 
-    document.body.removeChild(e.currentTarget.parentNode.parentNode);
+    if (document.querySelector('.modal')) document.body.removeChild(document.querySelector('.modal'));
+
 }
 
 /**
@@ -317,7 +323,7 @@ async function createModal() {
     let addWorkButton = document.createElement('button');
     addWorkButton.appendChild(document.createTextNode('Ajouter une photo'));
     addWorkButton.classList.add('button-primary');
-    addWorkButton.addEventListener('click', addWork);
+    addWorkButton.addEventListener('click', openAddWorkModal);
 
     let deleteGalleryButton = document.createElement('button');
     deleteGalleryButton.appendChild(document.createTextNode('Supprimer la galerie'));
@@ -342,6 +348,13 @@ async function createModal() {
 async function addWorksToModal(modal) {
 
     let worksContainer = modal.querySelector('div.works');
+    // reset works
+    if (worksContainer.children) {
+        /* reset all subnodes */
+        for (let child of worksContainer.children) {
+            worksContainer.removeChild(child);
+        }
+    }
 
     worksSet.forEach( (work) => {
 
@@ -422,9 +435,58 @@ function editWork(e, id) {}
  * @param {Event} e the event
  * @param {String} id the work id
  */
-function deleteWork(e, id) {
+async function deleteWork(e, id) {
 
+    // use authentification token stored in cookie
+    const token = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('token='))
+    ?.split('=')[1];
+
+    const options = {
+        method: "DELETE",
+
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data"
+          },
+    };
+
+
+
+    await fetch(`http://localhost:5678/api/works/${id}`, options)
+        .then( (res) => {
+            if (res.ok) {
+
+                    // remove this work from our set
+                    worksSet.forEach( (work) => {
+                        if (work.id == id) worksSet.delete(work)
+                    });
+
+                    // then close modal
+                    // closeModal();
+                    /* or */
+                    openModal();
+
+                    // then rebuild gallery
+                    buildGallery();
+
+            } else {
+
+                throw new Error("Quelque chose s'est mal passé");
+
+            }
+        });
 }
 
-function addWork() {}
+function openAddWorkModal() {
+    let modal = document.querySelector('.modal')
+    let originalModalWrapper = document.querySelector('.modal-wrapper');
+    modal.removeChild(originalModalWrapper);
+
+    let addWorkForm = document.createElement('form');
+    addWorkForm.setAttribute('id', 'add-work');
+    addWorkForm.setAttribute('method', 'post');
+}
 function deleteAllWorks() {}
