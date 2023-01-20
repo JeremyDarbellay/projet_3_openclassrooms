@@ -76,7 +76,7 @@ function showErrorElt() {
 
     let errorElt = document.createElement('p');
     errorElt.classList.add('error');
-    errorElt.appendChild(document.createTextNode('Identifiants inconnus, veuillez vérifier votre saisie.'));
+    errorElt.appendChild(document.createTextNode('Erreur dans l’identifiant ou le mot de passe'));
 
     formSection.insertBefore(errorElt, form);
 
@@ -108,13 +108,13 @@ async function saveTokenAndRedirect(res) {
     const token = res.token;
     const userId = res.userId;
 
-    // save token
-
     // +1 day
     let date = new Date(Date.now() + 86400e3);
     date = date.toUTCString();
     document.cookie = 'token='+token+'; expires=' + date;
 
     // redirect to front
+    // @TODO save another thing in local storage ?
+    // @TODO set timeout before redirection ?
     window.location.href = "index.html";
 }

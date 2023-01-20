@@ -1,8 +1,5 @@
 /* Script chargé de l'import des projets */
 
-/* TODOLIST
- */
-
 /* call our function to build non filtered gallery */
 document.body.onload = buildPage;
 
@@ -34,12 +31,12 @@ async function getAllCategories() {
 
 }
 
-/*
+/**
 * add all works to gallery
 * iterate over works 
 * create a figure element for each work
 */ 
-async function addGallery() {
+async function buildGallery() {
 
     /* select gallery to add theses elements */
     const galleryContainer = document.querySelector('div.gallery');
@@ -90,9 +87,9 @@ async function buildPage() {
 
     buildCategories();
 
-    addGallery();
+    buildGallery();
 
-    showWorksBar();
+    showEditionElts();
 }
 
 /* 
@@ -229,7 +226,205 @@ async function filterWorks(e) {
  * function to show admin functionalities
  * on page, like adding or removing
  * works.
+ * @TODO all admins elts please ....
  */
-async function showWorksBar() {
+async function showEditionElts() {
+
+
+    let editGalleryButton = document.querySelector('section#portfolio>h2').appendChild(createEditButton());
+
+    document.querySelector('#introduction>figure').appendChild(createEditButton());
+
+    document.querySelector('#introduction>article')
+        .insertBefore(createEditButton(), document.querySelector('#introduction>article>h2'));
+
+
+    editGalleryButton.addEventListener("click", openModal);
+}
+
+/**
+ * Create an edit button
+ * then return it
+ * (don't place it in DOM)
+ * @return {Node} the edit button
+ */
+function createEditButton() {
+
+    let button = document.createElement('button');
+    button.classList.add('edit-button');
+    let icon = document.createElement('img');
+    icon.setAttribute('src', 'assets/icons/edit-svgrepo-com.svg');
+    icon.setAttribute('alt', "une icône d'un crayon sur du papier");
+    button.appendChild(icon);
+    button.appendChild(document.createTextNode('modifier'));
+
+    return button;
+}
+
+/**
+ * show modal 
+ */
+async function openModal() {
+
+    let existingModal
+    // if modal exist do nothing
+    if (existingModal !== undefined) document.body.removeChild(existingModal);
+
+    let modal = await createModal();
+
+    modal = await addWorksToModal(modal);
+
+    document.body.appendChild(modal);
+
 
 }
+
+// close modal from close button
+async function closeModal(e) {
+
+    document.body.removeChild(e.currentTarget.parentNode.parentNode);
+}
+
+/**
+ * create the modal
+ */
+async function createModal() {
+
+    let modal = document.createElement('aside');
+    modal.classList.add('modal');
+
+    let modalWrapper = document.createElement('div');
+    modalWrapper.classList.add('modal-wrapper');
+    modal.appendChild(modalWrapper);
+
+    let closeButton = document.createElement('button');
+    closeButton.classList.add('close-modal');
+    let closeBtnIcon = document.createElement('img');
+    closeBtnIcon.setAttribute('src', 'assets/icons/close-svgrepo-com.svg'); 
+    closeBtnIcon.setAttribute('alt', 'une croix pour fermer'); 
+    closeBtnIcon.setAttribute('width', '24'); 
+    closeButton.appendChild(closeBtnIcon);
+    closeButton.addEventListener('click', (e) => closeModal(e));
+
+    let title = document.createElement('h3');
+    title.appendChild(document.createTextNode('Galerie photo'));
+
+    let worksContainer = document.createElement('div');
+    worksContainer.classList.add('works');
+
+    let hr = document.createElement('hr');
+
+    let addWorkButton = document.createElement('button');
+    addWorkButton.appendChild(document.createTextNode('Ajouter une photo'));
+    addWorkButton.classList.add('button-primary');
+    addWorkButton.addEventListener('click', addWork);
+
+    let deleteGalleryButton = document.createElement('button');
+    deleteGalleryButton.appendChild(document.createTextNode('Supprimer la galerie'));
+    deleteGalleryButton.classList.add('danger');
+    deleteGalleryButton.addEventListener('click', deleteAllWorks);
+
+    modalWrapper.appendChild(closeButton);
+    modalWrapper.appendChild(title);
+    modalWrapper.appendChild(worksContainer);
+    modalWrapper.appendChild(hr);
+    modalWrapper.appendChild(addWorkButton);
+    modalWrapper.appendChild(deleteGalleryButton);
+
+    return modal;
+}
+
+/**
+ * function which take works from worksSet
+ * and append them in workContainer
+ * @param {Node} modal the modal
+ */
+async function addWorksToModal(modal) {
+
+    let worksContainer = modal.querySelector('div.works');
+
+    worksSet.forEach( (work) => {
+
+        let element = createEditableWorkElt(work);
+        worksContainer.appendChild(element);
+
+    });
+
+    return modal;
+}
+
+/**
+ * create a work element
+ * attach button and related events
+ * to modify content
+ * @param {Object} work the work with necessary informations
+ * @return {Node} the div to add.
+ */
+function createEditableWorkElt(work) {
+    
+    let workDiv = document.createElement('div');
+    workDiv.classList.add('edit-work');
+
+    /* create image */
+    let imgElt = document.createElement('img');
+    imgElt.setAttribute('src', work.imageUrl);
+    imgElt.setAttribute('alt', work.title);
+
+    /* create buttons */
+
+    // "éditer" under work
+    let editButton = document.createElement('button');
+    editButton.appendChild(document.createTextNode('éditer'));
+    editButton.addEventListener('click', (e) => editWork(e, work.id))
+
+    // add delete button
+    let deleteButton = document.createElement('button');
+    deleteButton.classList.add('icon-button');
+    let deleteIcon = document.createElement('img');
+    deleteIcon.setAttribute('src', 'assets/icons/bin-svgrepo-com.svg');
+    deleteIcon.setAttribute('alt', 'une icône de poubelle');
+    deleteIcon.setAttribute('width', '9');
+    deleteButton.appendChild(deleteIcon);
+    deleteButton.addEventListener('click', (e) => deleteWork(e, work.id))
+
+    // add resize button
+    let resizeButton = document.createElement('button');
+    resizeButton.classList.add('icon-button');
+    let resizeIcon = document.createElement('img');
+    resizeIcon.setAttribute('src', 'assets/icons/arrow-4-way-svgrepo-com.svg');
+    deleteIcon.setAttribute('alt', 'une icône de 4 flèches dans toutes les directions');
+    resizeIcon.setAttribute('width', '12');
+    resizeButton.appendChild(resizeIcon);
+    resizeButton.addEventListener('click', (e) => resizeWork(e, work.id))
+
+    workDiv.appendChild(imgElt);
+    workDiv.appendChild(editButton);
+    workDiv.appendChild(deleteButton);
+    workDiv.appendChild(resizeButton);
+
+    return workDiv;
+
+}
+
+/**
+ * To do later
+ */
+function resizeWork(e, id) {}
+
+/**
+ * To do later
+ */
+function editWork(e, id) {}
+
+/**
+ * Function to send post request
+ * to delete work from db
+ * @param {Event} e the event
+ * @param {String} id the work id
+ */
+function deleteWork(e, id) {
+
+}
+
+function addWork() {}
+function deleteAllWorks() {}
