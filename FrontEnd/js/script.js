@@ -3,8 +3,9 @@
 /* call our function to build non filtered gallery */
 document.body.onload = buildPage;
 
-/* Create our main set, to use it later */
+/* Create our sets, to use it later */
 let worksSet = new Set();
+let categoriesSet = new Set();
 
 
 /** 
@@ -27,7 +28,8 @@ async function getAllWorks() {
 async function getAllCategories() {
 
     return fetch('http://localhost:5678/api/categories')
-        .then( categories => categories.json() );
+        .then( data => data.json() )
+        .then( categories => categories.forEach( (category) => categoriesSet.add(category)) );
 
 }
 
@@ -92,6 +94,7 @@ async function buildPage() {
 
     // retrieve works
     await getAllWorks();
+    await getAllCategories();
 
     buildCategories();
 
@@ -111,17 +114,12 @@ async function buildCategories() {
 
     filterBarElt = await addAllWorkFilter(filterBarElt);
 
-    await getAllCategories()
-        .then((categories) => {
+    categoriesSet.forEach((category) => {
 
-            categories.forEach((category) => {
-        
-                // create category element
-                createCategoryElt(category, filterBarElt);
+        // create category element
+        createCategoryElt(category, filterBarElt);
 
-            });
-
-        });
+    });
 
     // add Event listener to categories
     for (let category of filterBarElt.childNodes) {
@@ -232,20 +230,30 @@ async function filterWorks(e) {
  * function to show admin functionalities
  * on page, like adding or removing
  * works.
- * @TODO all admins elts please ....
+ * @TODO div in top please
  */
 async function showEditionElts() {
 
+    // use authentification token stored in cookie
+    const token = sessionStorage.getItem('token')
 
-    let editGalleryButton = document.querySelector('section#portfolio>h2').appendChild(createEditButton());
+    if (token !== null) {
 
-    document.querySelector('#introduction>figure').appendChild(createEditButton());
+        let editGalleryButton = document.querySelector('section#portfolio>h2').appendChild(createEditButton());
 
-    document.querySelector('#introduction>article')
-        .insertBefore(createEditButton(), document.querySelector('#introduction>article>h2'));
+        document.querySelector('#introduction>figure').appendChild(createEditButton());
+
+        document.querySelector('#introduction>article')
+            .insertBefore(createEditButton(), document.querySelector('#introduction>article>h2'));
 
 
-    editGalleryButton.addEventListener("click", openModal);
+        editGalleryButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openModal();
+        });
+
+    }
 }
 
 /**
@@ -281,16 +289,16 @@ async function openModal() {
 
     document.body.appendChild(modal);
 
-
 }
 
 // close modal from close button
 async function closeModal() {
 
-    if (document.querySelector('.modal')) document.body.removeChild(document.querySelector('.modal'));
+    let modal = document.querySelector('.modal');
+
+    if (modal != undefined) document.body.removeChild(document.querySelector('.modal'));
 
 }
-
 /**
  * create the modal
  */
@@ -310,7 +318,11 @@ async function createModal() {
     closeBtnIcon.setAttribute('alt', 'une croix pour fermer'); 
     closeBtnIcon.setAttribute('width', '24'); 
     closeButton.appendChild(closeBtnIcon);
-    closeButton.addEventListener('click', (e) => closeModal(e));
+    closeButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeModal();
+    });
 
     let title = document.createElement('h3');
     title.appendChild(document.createTextNode('Galerie photo'));
@@ -323,7 +335,7 @@ async function createModal() {
     let addWorkButton = document.createElement('button');
     addWorkButton.appendChild(document.createTextNode('Ajouter une photo'));
     addWorkButton.classList.add('button-primary');
-    addWorkButton.addEventListener('click', openAddWorkModal);
+    addWorkButton.addEventListener('click', openAddWorkForm);
 
     let deleteGalleryButton = document.createElement('button');
     deleteGalleryButton.appendChild(document.createTextNode('Supprimer la galerie'));
@@ -438,10 +450,7 @@ function editWork(e, id) {}
 async function deleteWork(e, id) {
 
     // use authentification token stored in cookie
-    const token = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('token='))
-    ?.split('=')[1];
+    const token = sessionStorage.getItem('token');
 
     const options = {
         method: "DELETE",
@@ -480,13 +489,209 @@ async function deleteWork(e, id) {
         });
 }
 
-function openAddWorkModal() {
-    let modal = document.querySelector('.modal')
+/**
+ * function to replace
+ * gallery modal by
+ * add work form
+ */
+async function openAddWorkForm() {
+
+    let modal = document.querySelector('.modal');
+
+    // remove previous modal
     let originalModalWrapper = document.querySelector('.modal-wrapper');
     modal.removeChild(originalModalWrapper);
+        
+    // create addWorkForm
+    await createAddWorkForm();
 
-    let addWorkForm = document.createElement('form');
-    addWorkForm.setAttribute('id', 'add-work');
-    addWorkForm.setAttribute('method', 'post');
+    // populate categories
+    addCategoriesToAddWorkForm();
+
+    // then add events to this form
+    addAddWorkFormEvents();
 }
+/**
+ * create add work form
+ * then append it and return it
+ */
+async function createAddWorkForm() {
+
+
+    let modal = document.querySelector('.modal');
+
+
+    modal.insertAdjacentHTML('afterbegin', `
+        <form id="add-work" method="post" class="modal-wrapper">
+            <h3>Ajout photo</h3>
+            <button class="close-modal">
+                <img 
+                    src="assets/icons/close-svgrepo-com.svg"
+                    alt="une croix pour fermer" 
+                    width="24">
+            </button>
+            <button class="back-modal">
+                <img 
+                    src="assets/icons/back-svgrepo-com.svg" 
+                    alt="une flèche pour revenir en arrière" 
+                    width="21">
+            </button>
+            <div class="img-input">
+                <img 
+                    src="assets/icons/picture-svgrepo-com.svg" 
+                    class="placeholder"
+                    alt="une icône d'image">
+                <label for="image-input">+ Ajouter photo</label>
+                <p>png, jpg: 4mo max</p>
+                <input type="file" name="image" id="image-input" accept=".jpg, .png">
+                <img src="" class="preview">
+            </div>
+            <label for="titre">
+                Titre
+                <input type="text" name="title" id="title-input" required="">
+            </label>
+            <label for="category">
+                Catégorie
+                <select name="category" id="category-input" required="">
+                </select>
+            </label>
+            <hr>
+            <input type="submit" value="Valider" class="js-submit">
+        </form>
+    `);
+}
+
+/**
+ * function which add events
+ * Listener to add work form
+ */
+async function addAddWorkFormEvents(modal) {
+
+
+    document.getElementById('add-work').addEventListener("submit", (e) => {
+
+        e.preventDefault();
+
+        // do form validation
+        let formIsValid = validateForm();
+
+        // send work
+        if (formIsValid == true) postNewWork(e);
+
+    });
+
+    document.querySelector('button.close-modal').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeModal();
+    });
+
+    document.querySelector('button.back-modal').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal();
+    });
+
+    document.querySelector('input#image-input').addEventListener('change', (e) => {
+        for (const file of e.currentTarget.files ) {
+
+            // size > 4Mb
+            if ( file.size > 4194304 ) {
+                e.currentTarget.setCustomValidity('Votre fichier est trop lourd.');
+                e.currentTarget.reportValidity();
+            } else if ( file.type !== "image/png" && file.type !== "image/jpeg" ) { 
+                e.currentTarget.setCustomValidity("Votre fichier n'est pas au bon format.");
+                e.currentTarget.reportValidity();
+            } else {
+                // if validity is ok preview image
+                document.querySelector('.img-input > img.preview').setAttribute('src', URL.createObjectURL(file));
+                // set opacity to 0 for others child
+                document.querySelector('.img-input').classList.add('preview');
+            }
+        };
+    })
+
+}
+
+async function addCategoriesToAddWorkForm(modal) {
+
+    let categoryInputSelect = document.getElementById('category-input');
+    // add default option (nothing)
+    let defaultOption = new Option('', '');
+    categoryInputSelect.appendChild(defaultOption);
+
+    categoriesSet.forEach( (category) => {
+
+        let option = new Option(category.name, category.id);
+        categoryInputSelect.add(option);
+
+    });
+
+}
+/** not implemented yet */
 function deleteAllWorks() {}
+
+/** 
+ * 
+*/
+function postNewWork(e) {
+    
+    const form = e.currentTarget;
+    var formData = new FormData(form);
+
+    const token = sessionStorage.getItem('token');
+    
+    let request = new XMLHttpRequest();
+    request.open("POST", "http://localhost:5678/api/works");
+    request.responseType = 'json';
+    request.setRequestHeader('Authorization', `Bearer ${token}`);
+    request.send(formData);
+    request.onload = function() {
+
+        if (request.status == 201) {
+
+            let data = request.response;
+    
+            let categoryName;
+            categoriesSet.forEach( (category) => { if (category.id == data.categoryId) categoryName = category.name} );
+    
+            let newWork = {
+                "id": data.id,
+                "title": data.title,
+                "imageUrl": data.imageUrl,
+                "categoryId": parseInt(data.categoryId),
+                "userId": data.userId,
+                "category": {
+                    "id": parseInt(data.categoryId),
+                    "name": categoryName
+                }
+    
+            }
+    
+            worksSet.add(newWork);
+            
+            console.log(worksSet);
+    
+            closeModal();
+
+        } else {
+            console.log('request error : '+request.status);
+        }
+
+    };
+
+}
+function validateForm() {
+
+    let formInputs = document.querySelectorAll('form#add-work>label>input');
+
+    var valid = true;
+
+    for (let input of formInputs) {
+        valid &= input.reportValidity();
+        if (!valid) {break;}
+    };
+
+    if (valid) return true;
+
+}

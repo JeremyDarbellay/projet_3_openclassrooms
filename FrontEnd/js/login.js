@@ -108,13 +108,10 @@ async function saveTokenAndRedirect(res) {
     const token = res.token;
     const userId = res.userId;
 
-    // +1 day
-    let date = new Date(Date.now() + 86400e3);
-    date = date.toUTCString();
-    document.cookie = 'token='+token+'; expires=' + date;
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('userId', userId);
 
     // redirect to front
-    // @TODO save another thing in local storage ?
-    // @TODO set timeout before redirection ?
+    // @TODO set timeout 
     window.location.href = "index.html";
 }
