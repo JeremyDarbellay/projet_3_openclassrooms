@@ -48,7 +48,6 @@ table {
 }
 /** end reset css**/
 body {
-	max-width: 1140px;
 	margin:auto;
 	font-family: 'Work Sans' ;
 	font-size: 14px;
@@ -61,12 +60,14 @@ body {
 	padding-bottom: 60px;
 }
 main {
+	max-width: 1140px;
+	margin: auto;
 	flex: 1;
 }
 header {
 	display: flex;
 	justify-content: space-between;
-	margin: 50px 0
+	margin: 50px 150px;
 }
 section {
 	margin: 50px 0
@@ -223,7 +224,7 @@ input[type="submit"] {
 footer {
 	position: absolute;
 	bottom: 0;
-	right: calc(50% - 50vw);
+	right: 0;
 }
 
 footer nav ul {
@@ -288,6 +289,31 @@ body.login-page {
 }
 
 /* modal */
+
+.admin-bar {
+	background-color: black;
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	
+}
+.admin-bar>button {
+	border: none;
+	border-radius: 60px;
+	background: #FFFFFF;
+	padding: 11px 23px;
+	margin-left: 21px;
+}
+.admin-bar>img {
+	margin-right: 9px;
+}
+
+.admin-bar ~ header {
+	margin-top: 38px;
+}
+
 .edit-button, #introduction .edit-button {
 	cursor: pointer;
 	display: flex;
@@ -409,12 +435,20 @@ figure > .edit-button {
 	top: 24px;
 }
 
-.modal-wrapper > label {
+#add-work {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+#add-work > hr {
+	width: 100%;
+}
+#add-work > label {
 	display: flex;
 	flex-direction: column;
 }
 
-.modal-wrapper > label > input,.modal-wrapper > label > select  {
+#add-work > label > input,#add-work > label > select  {
 	margin-top: 10px;
 	border: unset;
 	box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.09);
@@ -424,15 +458,17 @@ figure > .edit-button {
 	background-color: #FFFFFF
 }
 
-.modal-wrapper input[type="submit"] {
+#add-work input[type="submit"] {
 	margin: 32px auto 7px auto;
-	background: #A7A7A7;
+	background: #1D6154;
 	border: none;
 	padding: 10px;
 	width: 237px;
 	cursor: pointer;
 }
-
+#add-work input[type="submit"]:disabled {
+	background: #A7A7A7;
+}
 
 .img-input {
 	width: 420px;

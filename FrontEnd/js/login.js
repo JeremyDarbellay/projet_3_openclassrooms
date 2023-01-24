@@ -12,13 +12,14 @@ function addSubmitEvent() {
     let form = document.querySelector('.login-form');
 
     form.addEventListener("submit", (e) => {
+        
         e.preventDefault();
 
         // do form validation
         let formIsValid = validateForm();
 
         // do user authentication
-        if (formIsValid == true) authenticateUser(e);
+        if (formIsValid == true) authenticateUser();
 
     });
 
@@ -27,7 +28,6 @@ function addSubmitEvent() {
 
 /**
  * Function which authentificate the user
- * @param {Event} e The event
  */
 async function authenticateUser(e) {
 
