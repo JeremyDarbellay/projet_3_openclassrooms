@@ -29,7 +29,7 @@ function addSubmitEvent() {
 /**
  * Function which authentificate the user
  */
-async function authenticateUser(e) {
+async function authenticateUser() {
 
     let userEmail = document.querySelector('input#email').value;
     let userPass = document.querySelector('input#password').value;
@@ -98,7 +98,8 @@ function validateForm() {
 }
 
 /**
- * Save token and redirect to front
+ * Save token in localStorage
+ * and redirect to front
  * @param {Response} res the response
  */
 async function saveTokenAndRedirect(res) {
@@ -112,6 +113,5 @@ async function saveTokenAndRedirect(res) {
     sessionStorage.setItem('userId', userId);
 
     // redirect to front
-    // @TODO set timeout 
     window.location.href = "index.html";
 }

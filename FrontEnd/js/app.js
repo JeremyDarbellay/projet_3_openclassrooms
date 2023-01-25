@@ -25,7 +25,7 @@ async function buildPage() {
 
     buildGallery();
 
-    // use authentification token stored in cookie
+    // use authentification token stored in localStorage
     const token = sessionStorage.getItem('token')
 
     if (token !== null) {

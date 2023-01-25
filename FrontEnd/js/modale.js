@@ -1,13 +1,18 @@
 import { works } from "./sets.js"
-
+import { buildGallery } from "./gallery.js";
 import { openAddWorkForm } from "./add-work-form.js"
+
+/** var for accessibility */
+let focusableElts = []
+let previouslyFocusedElement = null;
+
 
 /**
  * function to show admin functionalities
  * on page, like adding or removing
  * works.
  */
-export async function createEditionElts() {
+async function createEditionElts() {
 
 
     // insert admin bar
@@ -54,26 +59,45 @@ export async function createEditionElts() {
 /**
  * construct modal
  * if modal exist delete it before
+ * handle focus and key events
  */
-export async function openModal() {
+async function openModal() {
 
     closeModal();
+
+    previouslyFocusedElement = document.querySelector(':focus')
 
     let modal = await createModal();
 
     document.body.appendChild(modal);
 
+    // build focusable elt list
+    buildFocusableEltList();
+    // add focus to modal
+    focusableElts[0].focus();
+
+    // register escape event to close modal
+    window.addEventListener( 'keydown', keyEvents )
+
 }
 
 /** 
  * close modal from close button 
+ * remove key events listeners
+ * set focus to previous focused element
  */
-export async function closeModal() {
+async function closeModal() {
 
     let modal = document.querySelector('.modal');
 
-    if (modal != undefined) document.body.removeChild(document.querySelector('.modal'));
+    if (modal != undefined) {
 
+        window.removeEventListener('keydown', keyEvents);
+
+        document.body.removeChild(document.querySelector('.modal'));
+
+        if (previouslyFocusedElement !== null) previouslyFocusedElement.focus();
+    }
 }
 
 /**
@@ -88,6 +112,9 @@ async function createModal() {
 
     let modal = document.createElement('aside');
     modal.classList.add('modal');
+    modal.setAttribute('aria-modal', true);
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-labelledby', 'modal-title')
 
     modal.insertAdjacentHTML('afterbegin', `
         <div class="modal-wrapper">
@@ -95,7 +122,7 @@ async function createModal() {
                 <img src="assets/icons/close-svgrepo-com.svg"
                     alt="une croix pour fermer" width="24">
             </button>
-            <h3>Galerie photo</h3>
+            <h3 id="modal-title">Galerie photo</h3>
             <div class="works">
             </div>
             <hr>
@@ -116,7 +143,7 @@ async function createModal() {
  * function which take works from works
  * and append them in workContainer
  * @param {Node} modal the modal
- * @return {Node}
+ * @return {Node} the modal
  */
 async function addWorksToModal(modal) {
 
@@ -126,8 +153,8 @@ async function addWorksToModal(modal) {
     works.forEach( (work) => {
 
         modal.querySelector('.works').insertAdjacentHTML('beforeend', `
-            <div class="edit-work" data-workId="${work.id}">
-                <img src="${work.imageUrl}" alt="${work.name}">
+            <div class="edit-work" data-workid="${work.id}">
+                <img src="${work.imageUrl}" alt="${work.title}">
                 <button>éditer</button>
                 <button class="icon-button js-delete-work">
                     <img src="assets/icons/bin-svgrepo-com.svg" alt="une icône de 4 flèches dans toutes les directions" width="9">
@@ -142,7 +169,7 @@ async function addWorksToModal(modal) {
 
     // add event listeners for each work
     modal.querySelectorAll("button.js-delete-work")
-        .forEach((button) => button.addEventListener('click',  (e) => deleteWork(e)))
+        .forEach((button) => button.addEventListener('click',  (e) => deleteConfirmation(e)))
 
     return modal;
 }
@@ -151,12 +178,11 @@ async function addWorksToModal(modal) {
 /**
  * Function to send post request
  * to delete work from db
- * @param {Event} e the event
- * @param {String} id the work id
+ * @param {Event} e the event fired by the delete button
  */
-async function deleteWork(e) {
+async function deleteWork(id) {
 
-    let id = e.currentTarget.getAttribute('data-workId');
+    // let id = e.currentTarget.parentNode.getAttribute('data-workid');
     
     // use authentification token stored in cookie
     const token = sessionStorage.getItem('token');
@@ -191,4 +217,87 @@ async function deleteWork(e) {
 
             }
         });
+}
+
+/**
+ * Accessibility function
+ * take care of focus in modal
+ * @param {Event} e the event fired by the key tab
+ */
+function focusInModal(e) {
+
+    e.preventDefault();
+
+    const modal = document.querySelector('.modal');
+
+    let index = focusableElts.findIndex(f => f === modal.querySelector(':focus'));
+
+    if (e.shiftKey === true) index--
+    else index++
+
+    if ( index >= focusableElts.length ) index = 0
+    else if ( index < 0 ) index = focusableElts.length - 1
+
+    focusableElts[index].focus();
+
+}
+
+/**
+ * handle accessibility function in modal
+ * removed with modal in closeModal()
+ * @param {Event} e the key event
+ */
+let keyEvents = function (e) {
+    if (e.key === "Escape" || e.key === "Esc") closeModal(e)
+    if (e.key === 'Tab') focusInModal(e)
+}
+
+/**
+ * populate focusableElts var
+ * can be used in another module
+ */
+function buildFocusableEltList() {
+    let modal = document.querySelector('.modal')
+    focusableElts = Array.from(modal.querySelectorAll('button, input:not(:disabled), select'))
+}
+
+/**
+ * show modal to confirm deletion of work
+ */
+async function deleteConfirmation(e) {
+
+    let id = e.currentTarget.parentNode.getAttribute('data-workid');
+
+    let modal = document.querySelector('.modal');
+
+    // remove previous modal child
+    let originalModalWrapper = document.querySelector('.modal-wrapper');
+    modal.removeChild(originalModalWrapper);
+
+    modal.insertAdjacentHTML('afterbegin', `
+        <div class="modal-wrapper delete-confirmation">
+            <h3 id="modal-title">Confirmation de suppression</h3>
+            <p>Voulez-vous réellement supprimer ce projet ?</p>
+            <div>
+                <button class="danger">Confirmer la suppression</button> 
+                <button class="cancel">Annuler la suppression</button>
+            </div>
+        </div>
+    `)
+
+    modal.querySelector('button.cancel').addEventListener('click', openModal);
+    modal.querySelector('button.danger').addEventListener('click', (e) => deleteWork(id));
+
+    // rebuild focusable elt list
+    buildFocusableEltList();
+    // add focus to "cancel" button (to avoid mistakes)
+    focusableElts[1].focus();
+}
+
+export {
+    focusableElts,
+    closeModal,
+    openModal,
+    createEditionElts,
+    buildFocusableEltList
 }

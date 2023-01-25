@@ -1,8 +1,6 @@
 import { buildGallery } from "./gallery.js";
 import { works, categories } from "./sets.js"
-import { closeModal, openModal } from "./modale.js"
-
-export { openAddWorkForm }
+import { closeModal, openModal, focusableElts, buildFocusableEltList } from "./modale.js"
 
 /**
  * function to replace
@@ -13,7 +11,7 @@ async function openAddWorkForm() {
 
     let modal = document.querySelector('.modal');
 
-    // remove previous modal
+    // remove previous modal child
     let originalModalWrapper = document.querySelector('.modal-wrapper');
     modal.removeChild(originalModalWrapper);
         
@@ -25,6 +23,13 @@ async function openAddWorkForm() {
 
     // then add events to this form
     addAddWorkFormEvents();
+
+
+    // rebuild focusable elt list
+    buildFocusableEltList();
+
+    // add focus to this form
+    focusableElts[0].focus();
 }
 
 /**
@@ -39,7 +44,7 @@ async function createAddWorkForm() {
 
     modal.insertAdjacentHTML('afterbegin', `
         <div class="modal-wrapper">
-            <h3>Ajout photo</h3>
+            <h3 id="modal-title">Ajout photo</h3>
             <button class="close-modal">
                 <img 
                     src="assets/icons/close-svgrepo-com.svg"
@@ -58,9 +63,9 @@ async function createAddWorkForm() {
                         src="assets/icons/picture-svgrepo-com.svg" 
                         class="placeholder"
                         alt="une icône d'image">
+                    <input type="file" name="image" id="image-input" accept=".jpg, .png" required>
                     <label for="image-input">+ Ajouter photo</label>
                     <p>png, jpg: 4mo max</p>
-                    <input type="file" name="image" id="image-input" accept=".jpg, .png" required>
                     <img src="" class="preview">
                 </div>
                 <label for="titre">
@@ -94,8 +99,6 @@ async function addAddWorkFormEvents() {
 
     });
 
-    // document.getElementById('title-input').addEventListener('submit', (e) => {e.preventDefault(); e.stopPropagation(); })
-
     document.querySelector('button.close-modal').addEventListener('click', closeModal);
 
     document.querySelector('button.back-modal').addEventListener('click', openModal);
@@ -108,14 +111,18 @@ async function addAddWorkFormEvents() {
             if ( file.size > 4194304 ) {
                 e.currentTarget.setCustomValidity('Votre fichier est trop lourd.');
                 e.currentTarget.reportValidity();
+                e.currentTarget.value = "";
             } else if ( file.type !== "image/png" && file.type !== "image/jpeg" ) { 
                 e.currentTarget.setCustomValidity("Votre fichier n'est pas au bon format.");
                 e.currentTarget.reportValidity();
+                e.currentTarget.value = "";
             } else {
                 // if validity is ok preview image
                 document.querySelector('.img-input > img.preview').setAttribute('src', URL.createObjectURL(file));
                 // set opacity to 0 for others child
                 document.querySelector('.img-input').classList.add('preview');
+                // remove previous validity report
+                e.currentTarget.setCustomValidity('');
             }
         };
     })
@@ -126,8 +133,13 @@ async function addAddWorkFormEvents() {
 
 }
 
-// @TODO document
-async function addCategoriesToAddWorkForm(modal) {
+
+/**
+ * add default empty option
+ * populate categories select element
+ * with objects from categories' set
+ */
+async function addCategoriesToAddWorkForm() {
 
     let categoryInputSelect = document.getElementById('category-input');
     // add default option (nothing)
@@ -142,8 +154,12 @@ async function addCategoriesToAddWorkForm(modal) {
     });
 
 }
+
 /** 
- * @TODO document
+ * send new Work to backend
+ * then add it to current set
+ * and finally remove modal
+ * @param {Event} e the event fired by submit button
 */
 function postNewWork(e) {
     
@@ -210,7 +226,11 @@ function validateForm() {
     if (valid) document.querySelector('#add-work input[type="submit"]').disabled = false;
     else document.querySelector('#add-work input[type="submit"]').disabled = true;
 
+
+    // rebuild focusable elements to include submit or exclude it
+    buildFocusableEltList();
+
 }
 
-// @TODO accessibility
-// @TODO test delete + send work
+
+export { openAddWorkForm }
