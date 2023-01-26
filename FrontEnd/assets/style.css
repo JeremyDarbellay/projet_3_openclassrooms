@@ -549,15 +549,17 @@ figure>.edit-button {
 
 #image-input {
 	width: 0;
+	height: 0;
 }
 
 #image-input:focus+label {
-	outline: black 1px solid;
+	outline: black 2px solid;
 }
 
 .img-input>p {
 	font-size: 10px;
-	color: #444444
+	color: #444444;
+	margin-bottom: 19px;
 }
 
 .img-input>img.preview {
