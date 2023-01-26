@@ -19,7 +19,7 @@ async function initWorksSet() {
 
 /**
  * Make an api call to retrieve categories
- * @return {object}
+ * @return {object} all categories
  */
 async function initCategoriesSet() {
 

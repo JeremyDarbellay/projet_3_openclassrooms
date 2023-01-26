@@ -9,11 +9,9 @@ let previouslyFocusedElement = null;
 
 /**
  * function to show admin functionalities
- * on page, like adding or removing
- * works.
+ * on page, editions buttons, admin bar and logout link.
  */
 async function createEditionElts() {
-
 
     // insert admin bar
     document.body.insertAdjacentHTML('afterbegin', `
@@ -53,6 +51,22 @@ async function createEditionElts() {
             e.stopPropagation();
             openModal();
         });
+
+    // logout link
+    let logoutLink = document.createElement('a');
+    logoutLink.appendChild(document.createTextNode('logout'));
+    logoutLink.classList.add('login-link');
+    logoutLink.setAttribute('href', '#');
+
+    // add event to logout user
+    logoutLink.addEventListener('click', () => {
+        sessionStorage.clear();
+        window.location.reload();
+    });
+    
+    //replace login with logout
+    document.querySelector('a.login-link')
+        .replaceWith(logoutLink);
 
 }
 
