@@ -63,7 +63,7 @@ async function createEditionElts() {
         sessionStorage.clear();
         window.location.reload();
     });
-    
+
     //replace login with logout
     document.querySelector('a.login-link')
         .replaceWith(logoutLink);
@@ -91,7 +91,7 @@ async function openModal() {
     focusableElts[0].focus();
 
     // register escape event to close modal
-    window.addEventListener( 'keydown', keyEvents )
+    window.addEventListener( 'keydown', keyEvents ) 
 
 }
 
@@ -129,6 +129,12 @@ async function createModal() {
     modal.setAttribute('aria-modal', true);
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-labelledby', 'modal-title')
+       
+    // ajout de l'événement pour fermer la modale
+    modal.addEventListener('click', (e) => {
+        if ( e.target !== e.currentTarget ) return;
+        else closeModal();
+    })
 
     modal.insertAdjacentHTML('afterbegin', `
         <div class="modal-wrapper">
@@ -184,6 +190,13 @@ async function addWorksToModal(modal) {
     // add event listeners for each work
     modal.querySelectorAll("button.js-delete-work")
         .forEach((button) => button.addEventListener('click',  (e) => deleteConfirmation(e)))
+        // If no popup wanted, uncomment below, comment line above 
+        // .forEach( (button) => button.addEventListener('click',  (e) => {
+        //     let id = e.currentTarget.parentNode.getAttribute('data-workid');
+        //     deleteWork(id)
+        //     })
+        // )
+        
 
     return modal;
 }
@@ -192,7 +205,7 @@ async function addWorksToModal(modal) {
 /**
  * Function to send post request
  * to delete work from db
- * @param {Event} e the event fired by the delete button
+ * @param id the id of the project to delete
  */
 async function deleteWork(id) {
 
