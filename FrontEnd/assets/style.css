@@ -548,8 +548,10 @@ figure>.edit-button {
 }
 
 #image-input {
-	width: 0;
-	height: 0;
+    opacity: 0;
+    position: absolute;
+    top: 65%;
+    left: 30%;
 }
 
 #image-input:focus+label {
