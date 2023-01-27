@@ -68,11 +68,10 @@ async function authenticateUser() {
  */
 function showErrorElt() {
 
+    if (document.querySelector('.error')) return;
+
     let formSection = document.getElementById('login-section');
     let form = document.getElementById('login-form');
-
-    let previousError = document.querySelector('.error');
-    if (previousError) formSection.removeChild(previousError);
 
     let errorElt = document.createElement('p');
     errorElt.classList.add('error');
@@ -107,10 +106,8 @@ async function saveTokenAndRedirect(res) {
     res = await res.json();
 
     const token = res.token;
-    const userId = res.userId;
 
     sessionStorage.setItem('token', token);
-    sessionStorage.setItem('userId', userId);
 
     // redirect to front
     window.location.href = "index.html";

@@ -1,10 +1,6 @@
 
-import { works as worksSet } from "./sets.js"
-import { categories as categoriesSet } from "./sets.js"
-
-
-
-export { buildCategories, buildGallery }
+import { works } from "./sets.js"
+import { categories } from "./sets.js"
 
 /**
 * reset gallery
@@ -21,7 +17,7 @@ async function buildGallery(categoryId = 'default') {
     /* select gallery to add theses elements */
     const galleryContainer = document.querySelector('div.gallery');
 
-    worksSet.forEach((work) => {
+    works.forEach((work) => {
 
         if( categoryId == work.categoryId || categoryId == 'default' ) {
 
@@ -61,7 +57,7 @@ async function buildCategories() {
     // manually add "all" filter
     filterBarElt.insertAdjacentHTML('afterbegin', `<button class="active" data-categoryid="default">Tous</button>`);
 
-    categoriesSet.forEach((category) => {
+    categories.forEach((category) => {
 
         // create category button
         filterBarElt.insertAdjacentHTML('beforeend', `<button data-categoryid="${category.id}">${category.name}</button>`);
@@ -103,6 +99,8 @@ async function createFilterBar() {
  */
 async function filterWorks(e) {
 
+    if (e.currentTarget.classList.contains('active')) return
+
     // remove active class from all filters
     for (let button of document.querySelectorAll('div.categories>button')) button.classList.remove('active');
     // then add active to current target
@@ -112,3 +110,5 @@ async function filterWorks(e) {
     buildGallery(e.currentTarget.getAttribute('data-categoryid'));
 
 }
+
+export { buildCategories, buildGallery }

@@ -208,9 +208,7 @@ async function addWorksToModal(modal) {
  * @param id the id of the project to delete
  */
 async function deleteWork(id) {
-
-    // let id = e.currentTarget.parentNode.getAttribute('data-workid');
-    
+  
     // use authentification token stored in cookie
     const token = sessionStorage.getItem('token');
 

@@ -8,10 +8,7 @@ import * as set from "./sets.js"
 /* call our function to build non filtered gallery */
 document.body.onload = buildPage;
 
-
-
-
-/* 
+/** 
 * call necessary function to add dynamic elements
 * to this page
 * init sets to avoid other api calls
@@ -25,7 +22,7 @@ async function buildPage() {
 
     buildGallery();
 
-    // use authentification token stored in localStorage
+    // use authentification token stored in sessionStorage
     const token = sessionStorage.getItem('token')
 
     if (token !== null) {
