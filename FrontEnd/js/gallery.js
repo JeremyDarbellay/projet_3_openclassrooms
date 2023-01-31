@@ -1,13 +1,12 @@
 
-import { works } from "./sets.js"
-import { categories } from "./sets.js"
+import { works, categories } from "./sets.js"
 
 /**
 * reset gallery
 * iterate over works 
 * create a figure element for each work
 * if filter provided, only show corresponding works
-* @param {String} categoryId filter
+* @param {String|Number} [categoryId=default] optional filter
 */ 
 async function buildGallery(categoryId = 'default') {
 
