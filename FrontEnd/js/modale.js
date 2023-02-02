@@ -241,6 +241,11 @@ async function deleteWork(id) {
                 throw new Error("Quelque chose s'est mal passé");
 
             }
+        })
+        .catch( (error) => {
+            // if there's an error, inform user with popup
+            closeModal();
+            alert("Une erreur est survenue, le média n'a pas été supprimé");
         });
 }
 

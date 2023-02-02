@@ -18,9 +18,9 @@ async function buildPage() {
     await set.initWorksSet();
     await set.initCategoriesSet();
 
-    buildCategories();
-
-    buildGallery();
+    // in case of error during init, do nothing
+    if (set.categories.size !== 0) buildCategories();
+    if (set.works.size !== 0) buildGallery();
 
     // use authentification token stored in sessionStorage
     const token = sessionStorage.getItem('token')

@@ -1,4 +1,6 @@
 
+import { showErrorElt } from "./gallery.js"
+
 /* Create our sets, to use it later */
 let works = new Set();
 let categories = new Set();
@@ -12,8 +14,17 @@ let categories = new Set();
 async function initWorksSet() {
 
     return fetch('http://localhost:5678/api/works')
-        .then( data => data.json() )
-        .then( set => set.forEach( (work) => works.add(work)) );
+        .then( async res => {
+
+            if (res.ok) return await res.json()
+
+            // if back return error, reject the promise to show error Elt
+            return Promise.reject(res);
+
+        })
+        .then( set => set.forEach( (work) => works.add(work)) )
+        // if there's an error, create an error message on page.
+        .catch( (error) => showErrorElt() );
 
 }
 
@@ -24,8 +35,15 @@ async function initWorksSet() {
 async function initCategoriesSet() {
 
     return fetch('http://localhost:5678/api/categories')
-        .then( data => data.json() )
-        .then( set => set.forEach( (category) => categories.add(category)) );
+        .then( async res => {
+
+            if (res.ok) return await res.json()
+
+            return Promise.reject(data)
+
+        })
+        .then( set => set.forEach( (category) => categories.add(category)) )
+        .catch( (error) => showErrorElt() );
 
 }
 

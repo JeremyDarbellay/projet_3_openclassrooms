@@ -54,28 +54,30 @@ async function authenticateUser() {
                 saveTokenAndRedirect(res);
 
             } else if (res.status == "404") {
-                showErrorElt();
+                showErrorElt("Erreur dans l’identifiant ou le mot de passe");
             } else {
-                throw new Error("Quelque chose s'est mal passé");
+                return Promise.reject(res.status)
             }
-        });
+        })
+        .catch( (error) => showErrorElt("Une erreur est survenue"));
 
 
 }
 
 /**
  * show an error message before the form
+ * @param {String}
  */
-function showErrorElt() {
+function showErrorElt(reason) {
 
-    if (document.querySelector('.error')) return;
+    if (document.querySelector('.error')) document.querySelector('.error').remove();
 
     let formSection = document.getElementById('login-section');
     let form = document.getElementById('login-form');
 
     let errorElt = document.createElement('p');
     errorElt.classList.add('error');
-    errorElt.appendChild(document.createTextNode('Erreur dans l’identifiant ou le mot de passe'));
+    errorElt.appendChild(document.createTextNode(reason));
 
     formSection.insertBefore(errorElt, form);
 

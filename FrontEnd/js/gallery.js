@@ -110,4 +110,26 @@ async function filterWorks(e) {
 
 }
 
-export { buildCategories, buildGallery }
+/**
+ * custom function to add a paragraph
+ * containing an error message for users
+ */
+async function showErrorElt() {
+
+    // if there's already an error, do nothing
+    if (document.querySelector('#portfolio .error')) return
+
+    /* select gallery to add theses elements */
+    const portfolio = document.getElementById("portfolio");
+
+    // create an error to show to user
+    let errorElt = document.createElement('p');
+    errorElt.classList.add('error');
+    errorElt.appendChild(document.createTextNode('Une erreur est survenue, veuillez nous excuser pour le désagrément'));
+
+    // replace elements gallery with
+    portfolio.appendChild(errorElt);
+    
+}
+
+export { buildCategories, buildGallery, showErrorElt }

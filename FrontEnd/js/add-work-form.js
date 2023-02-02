@@ -202,10 +202,19 @@ function postNewWork(e) {
             closeModal();
 
         } else {
-            console.log('request error : '+request.status);
+            // if there's an error, inform user with popup
+            closeModal();
+            alert("Une erreur est survenue, le média n'a pas été ajouté");
+
         }
 
     };
+
+    // if there's an error, inform user with popup
+    request.onerror = function() {
+        closeModal();
+        alert("Une erreur est survenue, le média n'a pas été ajouté");
+    }
 
 }
 
